@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.js": "/Large-Barcode-Printer/static/js/main.460d985c.js",
+    "main.js": "/Large-Barcode-Printer/static/js/main.5fe38de4.js",
     "static/js/213.a4ab5ef7.chunk.js": "/Large-Barcode-Printer/static/js/213.a4ab5ef7.chunk.js",
     "static/js/553.3c762ae1.chunk.js": "/Large-Barcode-Printer/static/js/553.3c762ae1.chunk.js",
     "static/js/453.bab6df91.chunk.js": "/Large-Barcode-Printer/static/js/453.bab6df91.chunk.js",
     "index.html": "/Large-Barcode-Printer/index.html",
-    "main.460d985c.js.map": "/Large-Barcode-Printer/static/js/main.460d985c.js.map",
+    "main.5fe38de4.js.map": "/Large-Barcode-Printer/static/js/main.5fe38de4.js.map",
     "213.a4ab5ef7.chunk.js.map": "/Large-Barcode-Printer/static/js/213.a4ab5ef7.chunk.js.map",
     "553.3c762ae1.chunk.js.map": "/Large-Barcode-Printer/static/js/553.3c762ae1.chunk.js.map",
     "453.bab6df91.chunk.js.map": "/Large-Barcode-Printer/static/js/453.bab6df91.chunk.js.map"
   },
   "entrypoints": [
-    "static/js/main.460d985c.js"
+    "static/js/main.5fe38de4.js"
   ]
 }
