@@ -18,6 +18,12 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # VITE_CLIENT_ID and VITE_ORGANIZATION_ID are environment secrets on
+    # github-pages. Environment secrets only reach jobs that declare that
+    # environment, and this is the job that reads them. Without this line the
+    # build still succeeds - Vite substitutes empty strings - and deploys an
+    # app that cannot log in.
+    environment: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -27,6 +33,23 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # An absent secret is not an error to Vite - it compiles in an empty
+      # string and the deploy goes green with an app that cannot log in. Fail
+      # here instead.
+      - name: Verify build secrets are present
+        env:
+          VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+          VITE_ORGANIZATION_ID: ${{ secrets.VITE_ORGANIZATION_ID }}
+        run: |
+          missing=0
+          for name in VITE_CLIENT_ID VITE_ORGANIZATION_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name is empty. Check it exists as a secret on the github-pages environment."
+              missing=1
+            fi
+          done
+          exit $missing
 
       # VITE_REDIRECT_URI comes from the committed .env.production - it is the
       # public OAuth redirect, not a secret. VITE_CLIENT_ID and
