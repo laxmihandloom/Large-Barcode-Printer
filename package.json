@@ -30,7 +30,7 @@
 		"test:watch": "vitest",
 		"typecheck": "tsc --noEmit",
 		"predeploy": "npm run build",
-		"deploy": "gh-pages -d dist"
+		"deploy": "gh-pages -d dist --dotfiles"
 	},
 	"devDependencies": {
 		"@testing-library/jest-dom": "^6.4.0",
