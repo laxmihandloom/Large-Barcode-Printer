@@ -3,6 +3,25 @@ import JsBarcode from 'jsbarcode';
 import Box from '@mui/material/Box';
 import { Typography } from '@mui/material';
 
+// Usable width for the item name inside the 400px template, after padding.
+const NAME_WIDTH_PX = 370;
+const NAME_MAX_FONT_PX = 36;
+const NAME_MIN_FONT_PX = 18;
+// Rough advance width per character for bold uppercase Inter/Arial, as a
+// fraction of font size. Deliberately generous so the estimate errs toward
+// shrinking rather than overflowing.
+const NAME_CHAR_WIDTH_RATIO = 0.62;
+
+// The name is printed on two lines: the first two words, then the rest.
+// A long name used to overflow the fixed-width template and get clipped in the
+// capture, so the font size steps down until the longest line fits.
+export const fitNameFontSize = (lines: string[]): number => {
+  const longest = lines.reduce((max, line) => Math.max(max, line.length), 0);
+  if (longest === 0) return NAME_MAX_FONT_PX;
+  const fitted = NAME_WIDTH_PX / (longest * NAME_CHAR_WIDTH_RATIO);
+  return Math.max(NAME_MIN_FONT_PX, Math.min(NAME_MAX_FONT_PX, Math.floor(fitted)));
+};
+
 const BarcodeTemplate1 = ({ itemName, value, rate, mrp, sizeLabel, sizeCode, age, uniqueCode, sku }: any) => {
   const barcodeRef = useRef(null);
   useEffect(() => {
@@ -17,6 +36,17 @@ const BarcodeTemplate1 = ({ itemName, value, rate, mrp, sizeLabel, sizeCode, age
     }
   }, [value]);
   const discountPercentage = mrp && rate ? Math.round(((mrp - rate) / mrp) * 100) : 0;
+
+  // Items without a cf_mrp value in Zoho used to print a literal "₹undefined"
+  // and a 0% badge onto a physical tag; hide both instead.
+  const hasMrp = mrp !== undefined && mrp !== null && Number(mrp) > 0;
+
+  const nameWords = String(itemName ?? '').split(' ');
+  const nameLines = [
+    nameWords.slice(0, 2).join(' ').toUpperCase(),
+    nameWords.slice(2).join(' ').toUpperCase()
+  ];
+  const nameFontSize = fitNameFontSize(nameLines);
 
   return (
     <Box
@@ -41,24 +71,28 @@ const BarcodeTemplate1 = ({ itemName, value, rate, mrp, sizeLabel, sizeCode, age
           color: '#000000',
           fontFamily: 'Inter',
           fontWeight: 600,
-          fontSize: '36px',
+          fontSize: `${nameFontSize}px`,
           lineHeight: '100%',
           letterSpacing: '0%',
           textAlign: 'center',
-          marginBottom: '4px'
+          marginBottom: '4px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden'
         }}>
-          {itemName.split(' ').slice(0, 2).join(' ').toUpperCase()}
+          {nameLines[0]}
         </Typography>
         <Typography sx={{
           color: '#000000',
           fontFamily: 'Inter',
           fontWeight: 600,
-          fontSize: '36px',
+          fontSize: `${nameFontSize}px`,
           lineHeight: '100%',
           letterSpacing: '0%',
-          textAlign: 'center'
+          textAlign: 'center',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden'
         }}>
-          {itemName.split(' ').slice(2).join(' ').toUpperCase()}
+          {nameLines[1]}
         </Typography>
       </Box>
 
@@ -163,31 +197,35 @@ const BarcodeTemplate1 = ({ itemName, value, rate, mrp, sizeLabel, sizeCode, age
           alignItems: 'center',
           gap: 1
         }}>
-          <Typography sx={{
-            fontFamily: 'Inter',
-            fontWeight: 700,
-            fontSize: '18px',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            textAlign: 'center'
-          }}>
-            ORIGINAL PRICE
-          </Typography>
-          <Typography sx={{
-            fontFamily: 'Inter',
-            fontWeight: 600,
-            fontSize: '36px',
-            lineHeight: '100%',
-            letterSpacing: '0%',
-            textAlign: 'center',
-            textDecoration: 'line-through'
-          }}>
-            ₹{mrp}
-          </Typography>
+          {hasMrp && (
+            <>
+              <Typography sx={{
+                fontFamily: 'Inter',
+                fontWeight: 700,
+                fontSize: '18px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center'
+              }}>
+                ORIGINAL PRICE
+              </Typography>
+              <Typography sx={{
+                fontFamily: 'Inter',
+                fontWeight: 600,
+                fontSize: '36px',
+                lineHeight: '100%',
+                letterSpacing: '0%',
+                textAlign: 'center',
+                textDecoration: 'line-through'
+              }}>
+                ₹{mrp}
+              </Typography>
+            </>
+          )}
         </Box>
 
         {/* Discount Badge */}
-        <Box sx={{
+        {hasMrp && <Box sx={{
           position: 'absolute',
           top: 0,
           right: 0,
@@ -212,7 +250,7 @@ const BarcodeTemplate1 = ({ itemName, value, rate, mrp, sizeLabel, sizeCode, age
           }}>
             {discountPercentage}%
           </Typography>
-        </Box>
+        </Box>}
       </Box>
 
       {/* Sale Price Box */}

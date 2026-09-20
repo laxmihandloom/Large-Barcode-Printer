@@ -35,14 +35,14 @@ export interface Barcode {
 export const APIConstants = {
 	TOKEN: 'https://accounts.zoho.in/oauth/v2/token',
 	BOOKS: 'https://www.zohoapis.in/books/v3',
-	REDIRECT_URI: process.env.REACT_APP_REDIRECT_URI ?? '',
+	REDIRECT_URI: import.meta.env.VITE_REDIRECT_URI ?? '',
 	AUTH: 'https://accounts.zoho.in/oauth/v2/auth',
 	REFRESH: 'https://accounts.zoho.in/oauth/v2/auth/refresh',
 };
 
 export const envConstants = {
-	CLIENT_ID: process.env.REACT_APP_CLIENT_ID,
-	ORGANIZATION_ID: process.env.REACT_APP_ORGANIZATION_ID,
+	CLIENT_ID: import.meta.env.VITE_CLIENT_ID,
+	ORGANIZATION_ID: import.meta.env.VITE_ORGANIZATION_ID,
 };
 
 export const LogConstants = {
@@ -50,4 +50,5 @@ export const LogConstants = {
 	LOGIN_SUCCESS: 'Successfully logged in!',
 	FETCH_ITEMS_ERROR: 'Something went wrong while fetching Items!',
 	PRINT_BATCODES_ERROR: 'Something went wrong while printing the Barcodes!',
+	SESSION_EXPIRED: 'Your Zoho session expired. Please log in again.',
 };

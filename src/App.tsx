@@ -12,6 +12,7 @@ import Items from "./pages/Items";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import useDebounce from "./hooks/useDebounce";
+import { clearSession, hasValidSession, storeSession } from "./common/auth";
 
 const App = () => {
   const [alert, setAlert] = React.useState<SnackbarAlert | null>(null);
@@ -31,18 +32,19 @@ const App = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("expiresIn");
+    clearSession();
     window.location.assign(APIConstants.REDIRECT_URI);
     setIsAuthenticated(false);
   };
 
+  // Called when an API request finds the token has expired mid-session.
+  const handleSessionExpired = React.useCallback(() => {
+    clearSession();
+    setIsAuthenticated(false);
+  }, []);
+
   React.useEffect(() => {
-    if (
-      localStorage.getItem("accessToken") &&
-      localStorage.getItem("expiresIn") &&
-      new Date() <= new Date(localStorage.getItem("expiresIn")!)
-    ) {
+    if (hasValidSession()) {
       setIsAuthenticated(true);
       setAlert({
         severity: "success",
@@ -54,11 +56,7 @@ const App = () => {
     const accessToken = urlParams.get("access_token");
     const expiresIn = Number(urlParams.get("expires_in"));
     if (accessToken && expiresIn) {
-      localStorage.setItem("accessToken", accessToken);
-      localStorage.setItem(
-        "expiresIn",
-        new Date(Date.now() + expiresIn * 1000).toString()
-      );
+      storeSession(accessToken, expiresIn);
       setIsAuthenticated(true);
     }
   }, []);
@@ -83,7 +81,11 @@ const App = () => {
         setSearchText={setSearchText}
       >
         {isAuthenticated ? (
-          <Items setAlert={setAlert} searchText={debouncedSearchText} />
+          <Items
+            setAlert={setAlert}
+            searchText={debouncedSearchText}
+            onSessionExpired={handleSessionExpired}
+          />
         ) : (
           <Box
             sx={{

@@ -5,10 +5,11 @@ import BulkActionsButton from '../components/BulkActionsButton'
 import PrintBarcodeDialog from '../components/PrintBarcodeDialog'
 import { GridPaginationModel, GridRowSelectionModel } from '@mui/x-data-grid';
 import { BarcodeMetadata, LogConstants } from '../common/constants'
+import { isSessionExpiredError } from '../common/auth'
 import { fetchItems } from '../api/api'
 
 
-const Items = ({ setAlert, searchText }: any) => {
+const Items = ({ setAlert, searchText, onSessionExpired }: any) => {
     const [selection, setSelection] = React.useState<GridRowSelectionModel>([]);
     const [openPrintBarcodeDialog, setOpenPrintBarcodeDialog] = React.useState<boolean>(false)
     const [barcodeMetadata, setBarcodeMetadata] = React.useState<BarcodeMetadata[]>([])
@@ -55,6 +56,16 @@ const Items = ({ setAlert, searchText }: any) => {
             setItems(response.data.items)
             setHasNextPage(response.data.page_context.has_more_page)
         } catch (err: any) {
+            // An expired token is not a fetch failure - send the user back to
+            // the login screen instead of showing a generic error they cannot act on.
+            if (isSessionExpiredError(err) || err?.response?.status === 401) {
+                setAlert({
+                    severity: "warning",
+                    message: LogConstants.SESSION_EXPIRED
+                })
+                onSessionExpired?.()
+                return
+            }
             setAlert({
                 severity: "error",
                 message: LogConstants.FETCH_ITEMS_ERROR
