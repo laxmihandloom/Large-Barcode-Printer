@@ -1,0 +1,21 @@
+# This file is published to the gh-pages branch as part of every deploy.
+#
+# The gh-pages branch holds only the built site. If it ever gets checked out
+# in a normal working tree, everything else in that directory - dependencies,
+# build output and, critically, the .env holding Zoho credentials - shows up
+# as untouched by any ignore rule and can be staged by a stray `git add -A`.
+# These rules make that mistake impossible on this branch too.
+#
+# It lives in public/ rather than being committed to gh-pages directly because
+# `gh-pages -d dist` wipes the branch on each deploy; publishing it as part of
+# dist/ is what makes it stick.
+
+.env
+.env.*
+node_modules/
+dist/
+build/
+.vite/
+coverage/
+*.log
+src/
